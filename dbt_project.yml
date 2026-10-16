@@ -38,4 +38,3 @@ models:
 
        dot_311:
          +materialized: table
-
