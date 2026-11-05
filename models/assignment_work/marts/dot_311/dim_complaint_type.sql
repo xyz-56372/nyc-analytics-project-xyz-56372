@@ -1,6 +1,4 @@
 
--- Complaint type dimension for DOT 311 service requests.
--- Grain: one row per distinct (complaint_type, descriptor) combination.
 
 WITH stg_311 AS (
     SELECT * FROM {{ ref('stg_nyc_311_dot') }}
@@ -21,10 +19,6 @@ enriched AS (
     SELECT
         complaint_type,
         descriptor,
-
-        -- Derived category, based on keywords appearing in descriptor
-        -- Order matters due to CASE WHEN structure
-        -- Match is case insensitive
 
         CASE
             WHEN LOWER(descriptor) LIKE '%sidewalk%' THEN 'sidewalk'

@@ -1,7 +1,4 @@
 
--- Clean and standardize DOB NOW Job Application Filings
--- One row per job filing number
-
 WITH source AS (
     SELECT *
     FROM {{ source('raw', 'source_dob_job_applications_homework') }}
@@ -9,7 +6,6 @@ WITH source AS (
 
 cleaned AS (
     SELECT
-        -- Preserve all columns except those transformed below
         * EXCEPT (
             job_filing_number,
             filing_status,
@@ -40,15 +36,12 @@ cleaned AS (
             building_type
         ),
 
-        -- Identifiers
         NULLIF(TRIM(job_filing_number), '') AS job_filing_number,
 
-        -- Filing information
         UPPER(TRIM(filing_status)) AS filing_status,
         UPPER(TRIM(job_type)) AS job_type,
         UPPER(TRIM(building_type)) AS building_type,
 
-        -- Standardize borough
         CASE
             WHEN UPPER(TRIM(borough)) IN
                 ('MANHATTAN', 'NEW YORK', 'NEW YORK COUNTY', '1')
@@ -68,7 +61,6 @@ cleaned AS (
             ELSE 'Unknown'
         END AS borough,
 
-        -- Property details
         NULLIF(TRIM(house_no), '') AS house_no,
         NULLIF(TRIM(street_name), '') AS street_name,
         NULLIF(TRIM(block), '') AS block,
@@ -76,7 +68,6 @@ cleaned AS (
         NULLIF(TRIM(bin), '') AS bin,
         NULLIF(TRIM(commmunity_board), '') AS community_board,
 
-        -- Property ZIP code
         CASE
             WHEN REGEXP_CONTAINS(
                 TRIM(postcode),
@@ -86,20 +77,17 @@ cleaned AS (
             ELSE NULL
         END AS postcode,
 
-        -- Financial information
         SAFE_CAST(
             REGEXP_REPLACE(initial_cost, r'[$,\s]', '')
             AS NUMERIC
         ) AS initial_cost,
 
-        -- Construction floor area
         SAFE_CAST(
             REGEXP_REPLACE(
                 total_construction_floor_area, r'[,\s]', ''
             ) AS NUMERIC
         ) AS total_construction_floor_area,
 
-        -- Existing building characteristics
         SAFE_CAST(
             REGEXP_REPLACE(existing_stories, r'[,\s]', '')
             AS NUMERIC
@@ -115,7 +103,6 @@ cleaned AS (
             AS INT64
         ) AS existing_dwelling_units,
 
-        -- Proposed building characteristics
         SAFE_CAST(
             REGEXP_REPLACE(proposed_no_of_stories, r'[,\s]', '')
             AS NUMERIC
@@ -131,27 +118,22 @@ cleaned AS (
             AS INT64
         ) AS proposed_dwelling_units,
 
-        -- Dates: already TIMESTAMP in BigQuery
         CAST(filing_date AS TIMESTAMP) AS filing_date,
         CAST(current_status_date AS TIMESTAMP) AS current_status_date,
         CAST(first_permit_date AS TIMESTAMP) AS first_permit_date,
         CAST(approved_date AS TIMESTAMP) AS approved_date,
         CAST(signoff_date AS TIMESTAMP) AS signoff_date,
 
-        -- Geographic coordinates
         SAFE_CAST(latitude AS FLOAT64) AS latitude,
         SAFE_CAST(longitude AS FLOAT64) AS longitude,
 
-        -- Metadata
         CURRENT_TIMESTAMP() AS _stg_loaded_at
 
     FROM source
 
-    -- Filters
     WHERE job_filing_number IS NOT NULL
       AND TRIM(job_filing_number) != ''
 
-    -- Deduplication: keep the latest record per filing
     QUALIFY ROW_NUMBER() OVER (
         PARTITION BY TRIM(job_filing_number)
         ORDER BY

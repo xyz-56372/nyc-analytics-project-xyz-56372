@@ -1,6 +1,4 @@
 
--- Location dimension shared by both data sources
--- Grain: one row per distinct combination of borough / council_district / zip.
 
 WITH stg_311 AS (
     SELECT * FROM {{ ref('stg_nyc_311_dot') }}
@@ -49,7 +47,6 @@ location_dimension AS (
 
 ),
 
--- Null placeholder row to handle NULL values.
 null_placeholder AS (
 
     SELECT

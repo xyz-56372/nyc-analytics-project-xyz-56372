@@ -1,6 +1,4 @@
 
--- Filing representative dimension for DOB NOW job filings
--- Grain: one row per distinct combination of filing representative attributes
 
 WITH stg_dob AS (
     SELECT *
