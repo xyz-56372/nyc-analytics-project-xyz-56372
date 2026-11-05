@@ -3,11 +3,11 @@
 -- Grain: one row per distinct combination of borough / council_district / zip.
 
 WITH stg_311 AS (
-    SELECT * FROM {{ source('stagging', 'stg_nyc_311_dot') }}
+    SELECT * FROM {{ ref('stg_nyc_311_dot') }}
 ),
 
 stg_dob AS (
-    SELECT * FROM {{ source('stagging', 'stg_dob_job') }}
+    SELECT * FROM {{ ref('stg_dob_job') }}
 ),
 
 all_locations AS (

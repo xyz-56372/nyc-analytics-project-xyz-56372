@@ -3,7 +3,7 @@
 -- Grain: one row per distinct (complaint_type, descriptor) combination.
 
 WITH stg_311 AS (
-    SELECT * FROM {{ source('stagging', 'stg_nyc_311_dot') }}
+    SELECT * FROM {{ ref('stg_nyc_311_dot') }}
 ),
 
 distinct_complaint_types AS (

@@ -4,7 +4,7 @@
 
 WITH stg_dob AS (
     SELECT *
-    FROM {{ source('stagging', 'stg_dob_job') }}
+    FROM {{ ref('stg_dob_job') }}
 ),
 
 distinct_filing_reps AS (
